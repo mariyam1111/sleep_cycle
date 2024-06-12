@@ -1,163 +1,118 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(SleepTrackerApp());
+  runApp(SleepCycleTrackerApp());
 }
 
-class SleepTrackerApp extends StatelessWidget {
+class SleepCycleTrackerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sleep Tracker',
-      theme: ThemeData(
-        primaryColor: Colors.blue,
-        accentColor: Colors.blueAccent,
-        brightness: Brightness.light,
-      ),
-      home: SleepTrackerHomePage(),
+      title: 'Sleep Cycle Tracker',
+      home: SleepCycleTrackerHomePage(),
     );
   }
 }
 
-class SleepTrackerHomePage extends StatefulWidget {
+class SleepCycleTrackerHomePage extends StatefulWidget {
   @override
-  _SleepTrackerHomePageState createState() => _SleepTrackerHomePageState();
+  _SleepCycleTrackerHomePageState createState() =>
+      _SleepCycleTrackerHomePageState();
 }
 
-class _SleepTrackerHomePageState extends State<SleepTrackerHomePage> {
-  // Variables to store sleep data
-  TimeOfDay _sleepTime;
-  TimeOfDay _wakeUpTime;
-  int _screenTime;
-
-  // Function to calculate sleep duration
-  int _calculateSleepDuration(TimeOfDay sleepTime, TimeOfDay wakeUpTime) {
-    final sleep = DateTime(2024, 1, 1, sleepTime.hour, sleepTime.minute);
-    final wakeUp = DateTime(2024, 1, 1, wakeUpTime.hour, wakeUpTime.minute);
-    final difference = wakeUp.difference(sleep);
-    return difference.inMinutes;
-  }
-
-  // Function to show bedtime reminder
-  void _showBedtimeReminder(BuildContext context) {
-    final currentTime = TimeOfDay.now();
-    final bedtime = TimeOfDay(hour: 22, minute: 0); // Assuming bedtime is 10:00 PM
-
-    if (currentTime.hour >= 22) {
-      // If it's already past bedtime
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Bedtime Reminder'),
-          content: Text('It\'s time to go to bed!'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
-    }
-  }
+class _SleepCycleTrackerHomePageState extends State<SleepCycleTrackerHomePage> {
+  TimeOfDay? _bedTime;
+  TimeOfDay? _wakeUpTime;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sleep Tracker'),
+        title: Text('Sleep Cycle Tracker'),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Sleep Tracking',
-              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Sleep Time:'),
-                TextButton(
-                  onPressed: () async {
-                    final selectedTime = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.now(),
-                    );
-                    setState(() {
-                      _sleepTime = selectedTime;
-                    });
-                  },
-                  child: Text(
-                    _sleepTime != null
-                        ? '${_sleepTime.hour}:${_sleepTime.minute}'
-                        : 'Select Time',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Wake Up Time:'),
-                TextButton(
-                  onPressed: () async {
-                    final selectedTime = await showTimePicker(
-                      context: context,
-                      initialTime: TimeOfDay.now(),
-                    );
-                    setState(() {
-                      _wakeUpTime = selectedTime;
-                    });
-                  },
-                  child: Text(
-                    _wakeUpTime != null
-                        ? '${_wakeUpTime.hour}:${_wakeUpTime.minute}'
-                        : 'Select Time',
-                    style: TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20.0),
-            Text(
-              'Screen Time Calculation',
-              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10.0),
-            TextFormField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Enter Screen Time (in minutes)',
-              ),
-              onChanged: (value) {
+            ElevatedButton(
+              onPressed: () async {
+                final selectedTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
                 setState(() {
-                  _screenTime = int.tryParse(value);
+                  _bedTime = selectedTime;
                 });
               },
-            ),
-            SizedBox(height: 20.0),
-            TextButton(
-              onPressed: () {
-                // Calculate sleep duration
-                final sleepDuration =
-                    _calculateSleepDuration(_sleepTime, _wakeUpTime);
-                // Show bedtime reminder
-                _showBedtimeReminder(context);
-                // Process screen time data
-                // (Here you can store it in the database or perform any other operation)
-              },
-              child: Text('Save'),
-              style: TextButton.styleFrom(
-                backgroundColor: Colors.blue,
-                primary: Colors.white,
+              child: Text(
+                _bedTime != null ? 'Bedtime: ${_bedTime!.format(context)}' : 'Set Bedtime',
               ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                final selectedTime = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+                setState(() {
+                  _wakeUpTime = selectedTime;
+                });
+              },
+              child: Text(
+                _wakeUpTime != null ? 'Wake Up Time: ${_wakeUpTime!.format(context)}' : 'Set Wake Up Time',
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                if (_bedTime != null && _wakeUpTime != null) {
+                  // Calculate sleep duration
+                  final bedtime = _bedTime!.hour * 60 + _bedTime!.minute;
+                  final wakeUpTime = _wakeUpTime!.hour * 60 + _wakeUpTime!.minute;
+                  int sleepDuration = wakeUpTime - bedtime;
+                  if (sleepDuration < 0) {
+                    sleepDuration += 24 * 60; // Add 24 hours if the wake-up time is on the next day
+                  }
+                  // Calculate sleep cycles (assuming each cycle is 90 minutes)
+                  int sleepCycles = sleepDuration ~/ 90;
+                  // Display sleep cycle info
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('Sleep Cycle Info'),
+                      content: Text('You slept for $sleepDuration minutes, which is approximately $sleepCycles sleep cycles.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  // Show error message if bedtime or wake up time is not set
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('Error'),
+                      content: Text('Please set both bedtime and wake up time.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text('OK'),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
+              child: Text('Calculate Sleep Cycles'),
             ),
           ],
         ),
